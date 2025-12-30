@@ -5,3 +5,5 @@
 ../Core/Src/lcd_i2c.c:60:6:LCD_SendString	16	static
 ../Core/Src/lcd_i2c.c:64:6:LCD_SetCursor	24	static
 ../Core/Src/lcd_i2c.c:71:6:LCD_Clear	8	static
+../Core/Src/lcd_i2c.c:76:6:LCD_ScrollLeft	8	static
+../Core/Src/lcd_i2c.c:80:6:LCD_ScrollRight	8	static

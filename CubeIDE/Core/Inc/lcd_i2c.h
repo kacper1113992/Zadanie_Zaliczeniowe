@@ -15,5 +15,7 @@ void LCD_Init(void);
 void LCD_SendString(char *str);
 void LCD_SetCursor(uint8_t row, uint8_t col);
 void LCD_Clear(void);
+void LCD_ScrollLeft(void);
+void LCD_ScrollRight(void);
 
 #endif /* INC_LCD_I2C_H_ */

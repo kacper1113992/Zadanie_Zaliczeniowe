@@ -123,16 +123,19 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   LCD_Init();
-  LCD_SetCursor(0, 0);
-  LCD_SendString("Projekt Zalic.");
-  LCD_SetCursor(1, 0);
-  LCD_SendString("Temp: Start...");
-  /* USER CODE END 2 */
+    LCD_SetCursor(0, 0);
+
+    LCD_SendString("Dlugie zdanie do przewijania    "); // Dodaj spacje, zeby bylo widac efekt
+    LCD_SetCursor(1, 0);
+     LCD_SendString("Temp: Start...");
+    /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  LCD_ScrollLeft();
+	  HAL_Delay(150); // Prędkość przewijania (im mniej, tym szybciej)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
