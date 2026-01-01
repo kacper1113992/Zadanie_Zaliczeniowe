@@ -85,7 +85,7 @@ main-build: Zadanie_Zaliczeniowe.elf secondary-outputs
 
 # Tool invocations
 Zadanie_Zaliczeniowe.elf Zadanie_Zaliczeniowe.map: $(OBJS) $(USER_OBJS) D:\Dokumenty\Studia\5sem\mikro\Zad_Zal\Zadanie_Zaliczeniowe\CubeIDE\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "Zadanie_Zaliczeniowe.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\Dokumenty\Studia\5sem\mikro\Zad_Zal\Zadanie_Zaliczeniowe\CubeIDE\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Zadanie_Zaliczeniowe.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+	arm-none-eabi-g++ -o "Zadanie_Zaliczeniowe.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\Dokumenty\Studia\5sem\mikro\Zad_Zal\Zadanie_Zaliczeniowe\CubeIDE\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Zadanie_Zaliczeniowe.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
