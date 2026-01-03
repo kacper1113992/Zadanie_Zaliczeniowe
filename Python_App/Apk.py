@@ -190,20 +190,32 @@ class TempControlApp:
             
             # --- 1. ODCZYT DANYCH ---
             if self.ser and self.ser.is_open:
-                # ODCZYT Z STM32
                 try:
-                    # Czytamy wszystko co przyszło, bierzemy ostatnią pełną linię
+                    # Czytamy wszystko
                     lines = self.ser.read_all().decode('utf-8').split('\n')
                     if len(lines) > 1:
-                        # Bierzemy przedostatni element (ostatni może być pusty po split)
-                        raw_data = lines[-2].strip()
-                        if raw_data:
-                            current_temp = float(raw_data)
-                    else:
-                        # Jeśli nic nie przyszło, użyj ostatniej znanej
-                        current_temp = self.temp_data[-1] if self.temp_data else 20.0
-                except:
-                    # W razie błędu parsowania lub komunikacji
+                        raw_line = lines[-2].strip() # Bierzemy ostatnią pełną linię
+                        
+                        if raw_line and ";" in raw_line: # Sprawdzamy czy jest średnik!
+                            parts = raw_line.split(";")
+                            
+                            # Pobieramy TEMP AKTUALNĄ
+                            current_temp = float(parts[0])
+                            
+                            # Pobieramy TEMP ZADANĄ (Synchronizacja z przyciskami STM32!)
+                            stm_target = float(parts[1])
+                            
+                            # Aktualizujemy target w GUI tylko jeśli różni się od naszego
+                            # (To sprawia, że jak klikniesz przycisk na STM, GUI się zaktualizuje)
+                            if abs(self.target_temp - stm_target) > 0.01:
+                                self.target_temp = stm_target
+                                self.update_setpoint_ui()
+
+                        elif raw_line: # Stara kompatybilność (jakby przyszła jedna liczba)
+                            current_temp = float(raw_line)
+                            
+                except Exception as e:
+                    print(f"Błąd RX: {e}")
                     current_temp = self.temp_data[-1] if self.temp_data else 20.0
             else:
                 # SYMULACJA (Gdy brak STM32)
