@@ -9,6 +9,7 @@ import random
 import time
 
 class TempControlApp:
+
     def __init__(self, root):
         self.root = root
         self.root.title("Panel Sterowania Temperaturą - STM32 SCADA")
@@ -66,17 +67,35 @@ class TempControlApp:
         frame.pack(fill="x", padx=10, pady=10)
 
         self.lbl_current = self.create_value_box(frame, "Aktualna Temp.", "--.- °C", "#d32f2f") # Czerwony
-        self.lbl_target = self.create_value_box(frame, "Zadana Temp.", f"{self.target_temp:.1f} °C", "#388e3c") # Zielony
+        
+        # TU ZMIANA: Dodajemy flagę add_indicator=True dla środkowego pola
+        self.lbl_target = self.create_value_box(frame, "Zadana Temp.", f"{self.target_temp:.1f} °C", "#388e3c", add_indicator=True) # Zielony
+        
         self.lbl_error = self.create_value_box(frame, "Uchyb Regulacji", "0.00", "#1976d2") # Niebieski
 
-    def create_value_box(self, parent, title, value, color):
+    def create_value_box(self, parent, title, value, color, add_indicator=False):
         # Pomocnicza funkcja do tworzenia kafelków z danymi
         box = ttk.Frame(parent, borderwidth=2, relief="groove")
         box.pack(side="left", expand=True, fill="both", padx=5)
         
-        ttk.Label(box, text=title, font=("Helvetica", 10, "bold")).pack(pady=5)
-        lbl = ttk.Label(box, text=value, font=("Helvetica", 24, "bold"), foreground=color)
+        # Kontener na tekst (żeby był po lewej/środku)
+        text_frame = ttk.Frame(box)
+        text_frame.pack(side="left", expand=True, fill="both")
+
+        ttk.Label(text_frame, text=title, font=("Helvetica", 10, "bold")).pack(pady=5)
+        lbl = ttk.Label(text_frame, text=value, font=("Helvetica", 24, "bold"), foreground=color)
         lbl.pack(pady=5)
+
+        # --- NOWOŚĆ: Kontrolka Stanu ---
+        if add_indicator:
+            # Tworzymy płótno (Canvas) na kółko
+            self.indicator_canvas = tk.Canvas(box, width=40, height=40, highlightthickness=0)
+            self.indicator_canvas.pack(side="right", padx=15)
+            
+            # Rysujemy kółko (x1, y1, x2, y2). Kolor domyślny: szary (nieaktywny)
+            # Tag 'status_light' pozwoli nam łatwo zmieniać kolor później
+            self.indicator_id = self.indicator_canvas.create_oval(5, 5, 35, 35, fill="#cccccc", outline="#999999")
+            
         return lbl
 
     def create_controls(self):
@@ -155,6 +174,11 @@ class TempControlApp:
             self.port_combo.config(state="normal")
             self.lbl_current.config(text="--.- °C")
 
+            # Reset kontrolki na szary
+            if hasattr(self, 'indicator_canvas'):
+                self.indicator_canvas.itemconfig(self.indicator_id, fill="#cccccc", outline="#999999")
+
+
     def change_setpoint(self, delta):
         self.target_temp = round(self.target_temp + delta, 2)
         self.update_setpoint_ui()
@@ -206,34 +230,51 @@ class TempControlApp:
                             stm_target = float(parts[1])
                             
                             # Aktualizujemy target w GUI tylko jeśli różni się od naszego
-                            # (To sprawia, że jak klikniesz przycisk na STM, GUI się zaktualizuje)
                             if abs(self.target_temp - stm_target) > 0.01:
                                 self.target_temp = stm_target
                                 self.update_setpoint_ui()
 
-                        elif raw_line: # Stara kompatybilność (jakby przyszła jedna liczba)
+                        elif raw_line: # Stara kompatybilność
                             current_temp = float(raw_line)
                             
                 except Exception as e:
                     print(f"Błąd RX: {e}")
                     current_temp = self.temp_data[-1] if self.temp_data else 20.0
             else:
-                # SYMULACJA (Gdy brak STM32)
-                # Symulacja bezwładności obiektu (stopniowe dążenie do celu)
+                # SYMULACJA
                 last = self.temp_data[-1] if self.temp_data else 20.0
                 diff = self.target_temp - last
-                # Wzór na "dojazd" do temperatury + szum pomiarowy
                 current_temp = last + (diff * 0.05) + random.uniform(-0.05, 0.05)
 
-            # --- 2. AKTUALIZACJA DANYCH WYKRESU (SCROLLING) ---
-            # Zwiększamy czas o interwał (0.2s)
+            # --- LOGIKA KONTROLKI STANU (LAMPKI) ---
+            # Histereza przyjęta jako 0.5 stopnia (zgodnie z kodem STM32)
+            color_fill = "#cccccc" # Szary domyślnie
+            color_outline = "#999999"
+
+            if current_temp < self.target_temp:
+                # GRZANIE -> Czerwony
+                color_fill = "#d32f2f" # Czerwony
+                color_outline = "#b71c1c"
+            elif current_temp > self.target_temp + 0.5:
+                # CHŁODZENIE -> Niebieski
+                color_fill = "#1976d2" # Niebieski
+                color_outline = "#0d47a1"
+            else:
+                # OK (MARTWA STREFA) -> Zielony
+                color_fill = "#388e3c" # Zielony
+                color_outline = "#1b5e20"
+            
+            # Aktualizacja koloru kółka
+            if hasattr(self, 'indicator_canvas'):
+                 self.indicator_canvas.itemconfig(self.indicator_id, fill=color_fill, outline=color_outline)
+
+            # --- 2. AKTUALIZACJA DANYCH WYKRESU ---
             self.time_counter += (self.update_interval / 1000.0)
             
             self.time_data.append(self.time_counter)
             self.temp_data.append(current_temp)
             self.setpoint_data.append(self.target_temp)
 
-            # Usuwanie starych danych (efekt przesuwania)
             if len(self.time_data) > self.max_points:
                 self.time_data.pop(0)
                 self.temp_data.pop(0)
@@ -248,12 +289,8 @@ class TempControlApp:
             self.line_temp.set_data(self.time_data, self.temp_data)
             self.line_set.set_data(self.time_data, self.setpoint_data)
             
-            # Skalowanie osi X (żeby "płynęła")
             if self.time_data:
                 self.ax.set_xlim(min(self.time_data), max(self.time_data))
-                
-                # Skalowanie osi Y (auto z marginesem lub stałe)
-                # Tutaj: Dynamiczne dopasowanie do danych z marginesem +/- 1 stopień
                 y_min = min(min(self.temp_data), min(self.setpoint_data)) - 2
                 y_max = max(max(self.temp_data), max(self.setpoint_data)) + 2
                 self.ax.set_ylim(y_min, y_max)
@@ -267,6 +304,5 @@ class TempControlApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = TempControlApp(root)
-    # Obsługa bezpiecznego zamknięcia
     root.protocol("WM_DELETE_WINDOW", root.quit)
     root.mainloop()

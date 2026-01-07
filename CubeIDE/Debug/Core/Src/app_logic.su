@@ -1,5 +1,6 @@
-../Core/Src/app_logic.c:27:6:App_Init	8	static
-../Core/Src/app_logic.c:47:6:HAL_UART_RxCpltCallback	16	static
-../Core/Src/app_logic.c:64:6:Process_Command	16	static
-../Core/Src/app_logic.c:73:6:Check_Buttons	8	static
-../Core/Src/app_logic.c:87:6:App_Process	40	static
+../Core/Src/app_logic.c:55:6:App_Init	8	static
+../Core/Src/app_logic.c:83:6:HAL_UART_RxCpltCallback	16	static
+../Core/Src/app_logic.c:104:6:Process_Command	16	static
+../Core/Src/app_logic.c:117:6:Check_Buttons	8	static
+../Core/Src/app_logic.c:136:6:Control_Climate	16	static
+../Core/Src/app_logic.c:189:6:App_Process	40	static
