@@ -1,0 +1,8 @@
+PA6 - tim3 ch1 pwm grzałki mosfet
+PE8 - wentylator
+PE9 - przycisk temp+
+PF13 - przycisk temp-
+PA15 - bmp280 CS
+PA5 - bmp280 SCK
+PD7 - bmp280 MOSI
+PG9 - bmp280 MISO
