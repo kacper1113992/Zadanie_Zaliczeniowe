@@ -1,6 +1,6 @@
-../Core/Src/app_logic.c:55:6:App_Init	2
-../Core/Src/app_logic.c:83:6:HAL_UART_RxCpltCallback	4
-../Core/Src/app_logic.c:104:6:Process_Command	4
-../Core/Src/app_logic.c:117:6:Check_Buttons	6
-../Core/Src/app_logic.c:136:6:Control_Climate	8
-../Core/Src/app_logic.c:189:6:App_Process	6
+../Core/Src/app_logic.c:57:6:App_Init	2
+../Core/Src/app_logic.c:85:6:HAL_UART_RxCpltCallback	4
+../Core/Src/app_logic.c:106:6:Process_Command	4
+../Core/Src/app_logic.c:119:6:Check_Buttons	6
+../Core/Src/app_logic.c:138:6:Control_Climate	8
+../Core/Src/app_logic.c:192:6:App_Process	6

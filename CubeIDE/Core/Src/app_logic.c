@@ -34,6 +34,8 @@ float temp_filtered = 0.0f;
 float press_filtered = 0.0f;
 float target_temp = 25.0f;
 float error=0;
+int pwm_duty = 0;
+uint8_t is_cooling = 0;
 
 /* --- Communication Buffers --- */
 uint8_t rx_byte;
@@ -135,8 +137,6 @@ void Check_Buttons() {
   */
 void Control_Climate() {
     error = target_temp - temp_filtered;
-    int pwm_duty = 0;
-    uint8_t is_cooling = 0;
     // 1. Logika GRZANIA (gdy jest za zimno)
     if (error > 0) {
         HAL_GPIO_WritePin(FAN_PORT, FAN_PIN, GPIO_PIN_RESET);
@@ -170,14 +170,17 @@ void Control_Climate() {
     if (pwm_duty > 0) {
     		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
     	    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+        	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
         }
         else if (is_cooling) {
         	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
         	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+        	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
         }
         else {
         	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
         	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+        	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
         }
 }
 
@@ -209,8 +212,8 @@ void App_Process(void) {
 				LCD_SendString(lcd_buffer);
 
 		char status = ' ';
-		if (temp_filtered < target_temp) status = '*';
-		else if (temp_filtered > target_temp + 0.5f) status = 'F';
+		if (pwm_duty > 0) status = '*';
+		else if (is_cooling) status = 'F';
 
 		sprintf(lcd_buffer, "Set: %.1f C %c", target_temp, status);
 				LCD_SetCursor(1, 0);
